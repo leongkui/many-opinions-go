@@ -140,20 +140,45 @@ func getOpinion(ctx context.Context, prompt string, modelID string, personality 
 
 	default: // Map to openai compatible
 		client := getOpenAIClientForProvider(provider)
-		resp, oaErr := client.CreateChatCompletion(timeoutCtx, openai.ChatCompletionRequest{
+		// OpenAI reasoning models (gpt-5.4, o-series) use MaxCompletionTokens
+		// for both reasoning and output. Multiply to leave room for visible output.
+		completionTokens := maxTokens
+		if provider == "openai" {
+			completionTokens = maxTokens * 4
+			if completionTokens > 128000 {
+				completionTokens = 128000
+			}
+		}
+		req := openai.ChatCompletionRequest{
 			Model: modelName,
 			Messages: []openai.ChatCompletionMessage{
 				{Role: openai.ChatMessageRoleSystem, Content: systemPrompt},
 				{Role: openai.ChatMessageRoleUser, Content: prompt},
 			},
-			Temperature:         temperature,
-			MaxCompletionTokens: maxTokens,
-		})
+			MaxCompletionTokens: completionTokens,
+		}
+		// OpenAI beta models reject temperature/top_p; skip for openai provider
+		if provider != "openai" {
+			req.Temperature = temperature
+		}
+		resp, oaErr := client.CreateChatCompletion(timeoutCtx, req)
 		if oaErr != nil {
 			err = oaErr
 		} else {
 			if len(resp.Choices) > 0 {
-				content = resp.Choices[0].Message.Content
+				msg := resp.Choices[0].Message
+				content = msg.Content
+				if content == "" && msg.ReasoningContent != "" {
+					content = msg.ReasoningContent
+				}
+				if content == "" && msg.Refusal != "" {
+					content = fmt.Sprintf("[Refused] %s", msg.Refusal)
+				}
+				log.Printf("[%s] choices=%d finish_reason=%s content_len=%d reasoning_len=%d refusal_len=%d",
+					modelID, len(resp.Choices), resp.Choices[0].FinishReason,
+					len(msg.Content), len(msg.ReasoningContent), len(msg.Refusal))
+			} else {
+				log.Printf("[%s] Response had 0 choices", modelID)
 			}
 		}
 	}

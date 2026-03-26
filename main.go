@@ -54,8 +54,8 @@ func main() {
 				},
 				"max_tokens": map[string]interface{}{
 					"type":        "integer",
-					"description": "Maximum response length. Default 4096.",
-					"default":     4096,
+					"description": "Maximum response length. Default 32768.",
+					"default":     32768,
 				},
 			},
 			Required: []string{"prompt"},
@@ -75,7 +75,7 @@ func main() {
 		if t, ok := args["temperature"].(float64); ok {
 			temperature = float32(t)
 		}
-		maxTokens := 4096
+		maxTokens := 32768
 		if m, ok := args["max_tokens"].(float64); ok {
 			maxTokens = int(m)
 		}
@@ -117,8 +117,8 @@ func main() {
 				},
 				"max_tokens": map[string]interface{}{
 					"type":        "integer",
-					"description": "Maximum response length per model. Default 4096.",
-					"default":     4096,
+					"description": "Maximum response length per model. Default 32768.",
+					"default":     32768,
 				},
 			},
 			Required: []string{"prompt"},
@@ -147,7 +147,7 @@ func main() {
 		if t, ok := args["temperature"].(float64); ok {
 			temperature = float32(t)
 		}
-		maxTokens := 4096
+		maxTokens := 32768
 		if m, ok := args["max_tokens"].(float64); ok {
 			maxTokens = int(m)
 		}
@@ -192,8 +192,8 @@ func main() {
 				},
 				"max_tokens": map[string]interface{}{
 					"type":        "integer",
-					"description": "Maximum response length per model. Default 4096.",
-					"default":     4096,
+					"description": "Maximum response length per model. Default 32768.",
+					"default":     32768,
 				},
 			},
 			Required: []string{"prompt"},
@@ -220,7 +220,7 @@ func main() {
 		if t, ok := args["temperature"].(float64); ok {
 			temperature = float32(t)
 		}
-		maxTokens := 4096
+		maxTokens := 32768
 		if m, ok := args["max_tokens"].(float64); ok {
 			maxTokens = int(m)
 		}
